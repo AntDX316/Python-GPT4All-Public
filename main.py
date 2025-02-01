@@ -15,7 +15,7 @@ load_dotenv()
 class AIGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("LM Studio Response Streamer")
+        self.root.title("Jan AI Response Streamer")
         self.root.geometry("800x800")  # Made taller to accommodate new controls
 
         # ----- Basic style setup for a simple, system-like look -----
@@ -81,9 +81,9 @@ class AIGUI:
         self.max_tokens_entry = ttk.Entry(params_frame, textvariable=self.max_tokens_var, width=8)
         self.max_tokens_entry.pack(side=tk.LEFT)
 
-        # Models available in LM Studio
+        # Models available in Jan AI
         self.models = [
-            ("deepseek-r1-distill-qwen-7b", "deepseek-r1-distill-qwen-7b"),
+            ("llama3.2-3b-instruct", "llama3.2-3b-instruct"),
         ]
         self.selected_model = tk.StringVar(value=self.models[0][0])
 
@@ -164,41 +164,12 @@ class AIGUI:
         try:
             # Load the IP from .env
             api_ip = os.getenv("API_IP", "127.0.0.1")
-            port = os.getenv("PORT", "1234")
+            port = os.getenv("PORT", "1337")
             url = f"http://{api_ip}:{port}/v1/chat/completions"
 
             # Resolve the actual model name from the user's selection
             chosen_label = self.selected_model.get()
             selected_model_id = next(item[1] for item in self.models if item[0] == chosen_label)
-
-            # Define the function for product search
-            tools = [{
-                "type": "function",
-                "function": {
-                    "name": "search_products",
-                    "description": "Search the product catalog by various criteria. Use this whenever a customer asks about product availability, pricing, or specifications.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "query": {
-                                "type": "string",
-                                "description": "Search terms or product name"
-                            },
-                            "category": {
-                                "type": "string",
-                                "description": "Product category to filter by",
-                                "enum": ["electronics", "clothing", "home", "outdoor"]
-                            },
-                            "max_price": {
-                                "type": "number",
-                                "description": "Maximum price in dollars"
-                            }
-                        },
-                        "required": ["query"],
-                        "additionalProperties": False
-                    }
-                }
-            }]
 
             # Get system message and user message
             system_message = self.system_input.get("1.0", tk.END).strip()
@@ -224,10 +195,9 @@ class AIGUI:
             data = {
                 "model": selected_model_id,
                 "messages": messages,
-                "tools": tools,
+                "stream": True,
                 "temperature": temperature,
-                "max_tokens": max_tokens,
-                "stream": True  # Enable streaming
+                "max_tokens": max_tokens
             }
 
             headers = {
@@ -335,12 +305,21 @@ class AIGUI:
         self.response_area.config(state=tk.DISABLED)
 
     def stop_generation(self):
+        # Store current response locally before clearing it
+        current_response = self.current_response
         self.is_generating = False
-        if self.current_response:
-            try:
-                self.current_response.close()
-            except:
-                pass
+        self.current_response = None  # Clear it immediately to prevent race conditions
+        
+        if current_response:
+            def close_response():
+                try:
+                    current_response.raw.close()  # Close the underlying connection
+                    current_response.close()
+                except:
+                    pass
+            # Handle response closing in a background thread
+            threading.Thread(target=close_response, daemon=True).start()
+        
         self.stop_button.config(state=tk.DISABLED)
         self.generate_button.config(state=tk.NORMAL)
         self.response_area.config(state=tk.NORMAL)
