@@ -72,25 +72,25 @@ class AIGUI:
         params_frame = ttk.Frame(self.main_frame, style="MainFrame.TFrame")
         params_frame.pack(fill=tk.X, pady=(0, 10))
 
-        # Center frame to hold both parameters
-        center_frame = ttk.Frame(params_frame, style="MainFrame.TFrame")
-        center_frame.pack(expand=True)
-        
-        # Temperature Label and Entry (with reduced spacing)
-        temp_label = ttk.Label(center_frame, text="Temperature:", style="MainLabel.TLabel")
+        # Center container frame
+        center_container = ttk.Frame(params_frame)
+        center_container.pack(expand=True)
+
+        # Temperature Label and Entry
+        temp_label = ttk.Label(center_container, text="Temperature:", style="MainLabel.TLabel")
         temp_label.pack(side=tk.LEFT)
         
-        self.temperature_var = tk.StringVar(value="0.28")
-        self.temperature_entry = ttk.Entry(center_frame, textvariable=self.temperature_var, width=8, style="White.TEntry")
-        self.temperature_entry.pack(side=tk.LEFT, padx=(5, 15))
+        self.temperature_var = tk.StringVar(value="0.7")
+        self.temperature_entry = ttk.Entry(center_container, textvariable=self.temperature_var, width=8, style="White.TEntry")
+        self.temperature_entry.pack(side=tk.LEFT, padx=(5, 20))
 
         # Max Tokens Label and Entry
-        tokens_label = ttk.Label(center_frame, text="Max Tokens:", style="MainLabel.TLabel")
+        tokens_label = ttk.Label(center_container, text="Max Tokens:", style="MainLabel.TLabel")
         tokens_label.pack(side=tk.LEFT)
         
         self.max_tokens_var = tk.StringVar(value="8192")
-        self.max_tokens_entry = ttk.Entry(center_frame, textvariable=self.max_tokens_var, width=8, style="White.TEntry")
-        self.max_tokens_entry.pack(side=tk.LEFT, padx=(5, 0))
+        self.max_tokens_entry = ttk.Entry(center_container, textvariable=self.max_tokens_var, width=8, style="White.TEntry")
+        self.max_tokens_entry.pack(side=tk.LEFT, padx=5)
 
         # Models available in GPT4All
         self.models = [
@@ -216,10 +216,7 @@ class AIGUI:
             messages.append({"role": "user", "content": user_message})
 
             # Get temperature and max_tokens
-            try:
-                temperature = float(self.temperature_var.get())
-            except ValueError:
-                temperature = 0.28
+            temperature = float(self.temperature_var.get())
 
             try:
                 max_tokens = int(self.max_tokens_var.get())
