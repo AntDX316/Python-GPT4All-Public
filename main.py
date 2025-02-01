@@ -15,12 +15,15 @@ load_dotenv()
 class AIGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Jan AI Response Streamer")
-        self.root.geometry("800x800")  # Made taller to accommodate new controls
+        self.root.title("GPT4All Response Streamer")
+        self.root.geometry("1000x800")
 
         # ----- Basic style setup for a simple, system-like look -----
         style = ttk.Style(root)
         style.theme_use('clam')
+        
+        # Configure light gray background for the root window
+        self.root.configure(bg="#f5f5f5")
 
         style.configure(
             "Basic.TButton",
@@ -32,8 +35,12 @@ class AIGUI:
             background=[("active", "#DDDDDD")]
         )
 
-        style.configure("MainFrame.TFrame", background="#f0f0f0")
-        style.configure("MainLabel.TLabel", background="#f0f0f0", font=("Helvetica", 14))
+        # Configure colors for frames and labels
+        style.configure("MainFrame.TFrame", background="#f5f5f5")
+        style.configure("MainLabel.TLabel", background="#f5f5f5", font=("Helvetica", 14))
+        style.configure("TFrame", background="#f5f5f5")
+        style.configure("TLabel", background="#f5f5f5")
+        style.configure("White.TEntry", background="#f5f5f5")
 
         # Bind cleanup
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -47,8 +54,8 @@ class AIGUI:
         system_label = ttk.Label(self.main_frame, text="System Message:", style="MainLabel.TLabel")
         system_label.pack(pady=(0,5))
 
-        # System Message Input
-        self.system_input = tk.Text(self.main_frame, height=2, font=("TkDefaultFont", 12))
+        # System Message Input - keep white background for input areas
+        self.system_input = tk.Text(self.main_frame, height=2, font=("TkDefaultFont", 12), bg="white")
         self.system_input.pack(fill=tk.X, pady=(0, 10))
         self.system_input.insert("1.0", "You are a helpful AI assistant.")
 
@@ -56,34 +63,39 @@ class AIGUI:
         self.prompt_label = ttk.Label(self.main_frame, text="User Message:", style="MainLabel.TLabel")
         self.prompt_label.pack(pady=(0,5))
 
-        # Prompt input
-        self.prompt_input = tk.Text(self.main_frame, height=3, font=("TkDefaultFont", 12))
+        # Prompt input - keep white background
+        self.prompt_input = tk.Text(self.main_frame, height=3, font=("TkDefaultFont", 12), bg="white")
         self.prompt_input.pack(fill=tk.X, pady=(0, 10))
-        self.prompt_input.insert("1.0", "Write 200 things a CEO can do.")
+        self.prompt_input.insert("1.0", "Tell me about artificial intelligence.")
 
         # Parameters Frame
-        params_frame = ttk.Frame(self.main_frame)
+        params_frame = ttk.Frame(self.main_frame, style="MainFrame.TFrame")
         params_frame.pack(fill=tk.X, pady=(0, 10))
 
-        # Temperature Label and Entry
-        temp_label = ttk.Label(params_frame, text="Temperature:", style="MainLabel.TLabel")
-        temp_label.pack(side=tk.LEFT, padx=(0, 5))
+        # Center frame to hold both parameters
+        center_frame = ttk.Frame(params_frame, style="MainFrame.TFrame")
+        center_frame.pack(expand=True)
         
-        self.temperature_var = tk.StringVar(value="0.7")
-        self.temperature_entry = ttk.Entry(params_frame, textvariable=self.temperature_var, width=8)
-        self.temperature_entry.pack(side=tk.LEFT, padx=(0, 20))
+        # Temperature Label and Entry (with reduced spacing)
+        temp_label = ttk.Label(center_frame, text="Temperature:", style="MainLabel.TLabel")
+        temp_label.pack(side=tk.LEFT)
+        
+        self.temperature_var = tk.StringVar(value="0.28")
+        self.temperature_entry = ttk.Entry(center_frame, textvariable=self.temperature_var, width=8, style="White.TEntry")
+        self.temperature_entry.pack(side=tk.LEFT, padx=(5, 15))
 
         # Max Tokens Label and Entry
-        tokens_label = ttk.Label(params_frame, text="Max Tokens:", style="MainLabel.TLabel")
-        tokens_label.pack(side=tk.LEFT, padx=(0, 5))
+        tokens_label = ttk.Label(center_frame, text="Max Tokens:", style="MainLabel.TLabel")
+        tokens_label.pack(side=tk.LEFT)
         
-        self.max_tokens_var = tk.StringVar(value="-1")
-        self.max_tokens_entry = ttk.Entry(params_frame, textvariable=self.max_tokens_var, width=8)
-        self.max_tokens_entry.pack(side=tk.LEFT)
+        self.max_tokens_var = tk.StringVar(value="8192")
+        self.max_tokens_entry = ttk.Entry(center_frame, textvariable=self.max_tokens_var, width=8, style="White.TEntry")
+        self.max_tokens_entry.pack(side=tk.LEFT, padx=(5, 0))
 
-        # Models available in Jan AI
+        # Models available in GPT4All
         self.models = [
-            ("llama3.2-3b-instruct", "llama3.2-3b-instruct"),
+            ("Reasoner v1", "Reasoner v1"),
+            ("DeepSeek-R1-Distill-Qwen-1.5B", "DeepSeek-R1-Distill-Qwen-1.5B")
         ]
         self.selected_model = tk.StringVar(value=self.models[0][0])
 
@@ -97,7 +109,8 @@ class AIGUI:
             textvariable=self.selected_model,
             values=[m[0] for m in self.models],
             state="readonly",
-            font=("TkDefaultFont", 12)
+            font=("TkDefaultFont", 12),
+            width=40
         )
         self.model_dropdown.pack(pady=(0,10))
 
@@ -124,12 +137,13 @@ class AIGUI:
         )
         self.stop_button.pack(side=tk.LEFT, padx=5)
 
-        # Response area
+        # Response area with white background
         self.response_area = scrolledtext.ScrolledText(
             self.main_frame,
             wrap=tk.WORD,
             height=20,
-            font=("TkDefaultFont", 12)
+            font=("TkDefaultFont", 12),
+            bg="white"
         )
         self.response_area.pack(fill=tk.BOTH, expand=True)
         self.response_area.config(state=tk.DISABLED)
@@ -140,6 +154,7 @@ class AIGUI:
         self.response_area.tag_configure("heading", font=("TkDefaultFont", 15, "bold"))
         self.response_area.tag_configure("code", font=("Courier", 12))
 
+        self.debug_messages = []  # Initialize debug messages list
         self.accumulated_response = ""
         self.displayed_length = 0
         self.is_generating = False
@@ -164,12 +179,31 @@ class AIGUI:
         try:
             # Load the IP from .env
             api_ip = os.getenv("API_IP", "127.0.0.1")
-            port = os.getenv("PORT", "1337")
-            url = f"http://{api_ip}:{port}/v1/chat/completions"
+            port = os.getenv("PORT", "4891")  # GPT4All default port
+            base_url = f"http://{api_ip}:{port}/v1"
+
+            # First check if server is reachable by getting models
+            self.log_message(f"Checking server connection at: {base_url}")
+            try:
+                models_response = requests.get(f"{base_url}/models", timeout=10)
+                self.log_message(f"Models endpoint response: {models_response.status_code}")
+                if models_response.ok:
+                    self.log_message(f"Available models: {json.dumps(models_response.json(), indent=2)}")
+                else:
+                    self.log_message(f"Error getting models: {models_response.text}")
+            except Exception as e:
+                self.log_message(f"Could not connect to server: {str(e)}")
+                return
+
+            url = f"{base_url}/chat/completions"
+
+            # Log URL
+            self.log_message(f"Connecting to: {url}")
 
             # Resolve the actual model name from the user's selection
             chosen_label = self.selected_model.get()
             selected_model_id = next(item[1] for item in self.models if item[0] == chosen_label)
+            self.log_message(f"Using model: {selected_model_id}")
 
             # Get system message and user message
             system_message = self.system_input.get("1.0", tk.END).strip()
@@ -185,84 +219,89 @@ class AIGUI:
             try:
                 temperature = float(self.temperature_var.get())
             except ValueError:
-                temperature = 0.7
+                temperature = 0.28
 
             try:
                 max_tokens = int(self.max_tokens_var.get())
             except ValueError:
-                max_tokens = -1
+                max_tokens = 2048
 
             data = {
                 "model": selected_model_id,
                 "messages": messages,
-                "stream": True,
-                "temperature": temperature,
-                "max_tokens": max_tokens
+                "max_tokens": max_tokens,
+                "temperature": temperature
             }
+
+            # Log request data
+            self.log_message(f"Sending request with data: {json.dumps(data, indent=2)}")
 
             headers = {
                 "Content-Type": "application/json"
             }
 
-            self.current_response = requests.post(url, json=data, headers=headers, stream=True)
-            
-            for line in self.current_response.iter_lines():
-                if not self.is_generating:
-                    break
+            # Make request to GPT4All API
+            self.log_message("Sending request to API...")
+            try:
+                self.current_response = requests.post(
+                    url, 
+                    json=data, 
+                    headers=headers,
+                    timeout=30  # Longer timeout since we're not streaming
+                )
+                self.log_message(f"Response status code: {self.current_response.status_code}")
+                
+                if self.current_response.status_code != 200:
+                    self.log_message(f"Error response: {self.current_response.text}")
+                    return
+
+                # Process the response
+                try:
+                    response_data = self.current_response.json()
+                    self.log_message(f"Response data: {json.dumps(response_data, indent=2)}")
                     
-                if line:
-                    # Remove 'data: ' prefix if present
-                    line_text = line.decode('utf-8')
-                    if line_text.startswith("data: "):
-                        line_text = line_text[6:]
-                    
-                    # Skip "[DONE]" message
-                    if line_text == "[DONE]":
-                        continue
-                        
-                    try:
-                        response_data = json.loads(line_text)
-                        if "choices" in response_data and len(response_data["choices"]) > 0:
-                            choice = response_data["choices"][0]
-                            if choice.get("finish_reason") == "tool_calls":
-                                # Handle tool calls
-                                if "message" in choice and "tool_calls" in choice["message"]:
-                                    tool_calls = choice["message"]["tool_calls"]
-                                    for tool_call in tool_calls:
-                                        if tool_call["type"] == "function" and tool_call["function"]["name"] == "search_products":
-                                            function_args = json.loads(tool_call["function"]["arguments"])
-                                            self.accumulated_response = f"Searching for products with parameters:\n"
-                                            self.accumulated_response += f"Query: {function_args.get('query', 'N/A')}\n"
-                                            self.accumulated_response += f"Category: {function_args.get('category', 'N/A')}\n"
-                                            self.accumulated_response += f"Max Price: ${function_args.get('max_price', 'N/A')}\n"
-                                            self.display_new_content()
-                            elif "delta" in choice:
-                                # Handle regular streaming response
-                                delta = choice["delta"]
-                                if "content" in delta:
-                                    content = delta["content"]
-                                    self.accumulated_response += content
-                                    self.display_new_content()
-                    except json.JSONDecodeError:
-                        continue
+                    if "choices" in response_data and len(response_data["choices"]) > 0:
+                        content = response_data["choices"][0]["message"]["content"]
+                        self.accumulated_response = content
+                        self.display_new_content()
+                    else:
+                        self.log_message("No choices found in response")
+                except json.JSONDecodeError as je:
+                    self.log_message(f"Error parsing response: {str(je)}")
+                    self.log_message(f"Raw response: {self.current_response.text}")
+                            
+            except requests.exceptions.Timeout:
+                self.log_message("Request timed out - the model might still be loading or processing")
+                self.log_message("Try again in a few seconds")
+            except requests.exceptions.ConnectionError as ce:
+                self.log_message(f"Connection error: {str(ce)}")
+                self.log_message("Please check if GPT4All is running and the API server is enabled")
 
         except Exception as e:
-            self.response_area.config(state=tk.NORMAL)
-            self.response_area.insert(tk.END, f"\nError: {str(e)}")
-            self.response_area.config(state=tk.DISABLED)
+            self.log_message(f"Error during request: {str(e)}")
         finally:
             self.is_generating = False
-            self.current_response = None
             self.generate_button.config(state=tk.NORMAL)
             self.stop_button.config(state=tk.DISABLED)
 
     def display_new_content(self):
-        new_text = self.accumulated_response[self.displayed_length:]
-        if not new_text:
-            return
-
-        self.append_markdown(new_text)
-        self.displayed_length = len(self.accumulated_response)
+        self.response_area.config(state=tk.NORMAL)
+        self.response_area.delete("1.0", tk.END)  # Clear existing content
+        
+        # Show debug section in a more compact format
+        for msg in self.debug_messages:
+            # Skip the detailed response data
+            if "Response data:" in msg or "Available models:" in msg:
+                continue
+            self.response_area.insert(tk.END, f"[DEBUG] {msg}\n")
+        
+        # Then display the AI response if we have one
+        if self.accumulated_response:
+            self.response_area.insert(tk.END, "\n")  # Add separator before response
+            self.append_markdown(self.accumulated_response)
+        
+        self.response_area.see("1.0")  # Scroll to top to show the response first
+        self.response_area.config(state=tk.DISABLED)
 
     def append_markdown(self, text):
         yview_before = self.response_area.yview()
@@ -337,6 +376,13 @@ class AIGUI:
     def on_closing(self):
         self.cleanup()
         self.root.destroy()
+
+    def log_message(self, message):
+        """Helper function to log messages to the response area"""
+        self.debug_messages.append(message)  # We know debug_messages exists from __init__
+        self.display_new_content()
+        # Force update the UI
+        self.root.update()
 
 
 if __name__ == "__main__":

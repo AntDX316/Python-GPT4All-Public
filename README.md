@@ -1,70 +1,52 @@
-# Jan AI Response Streamer
+# Python GPT4All API Service
 
-A sleek and intuitive desktop application that provides a seamless interface for interacting with Jan AI.
+This desktop application provides a user-friendly interface for interacting with GPT4All language models.
 
-This app features real-time response streaming, allowing you to see AI responses as they're being generated, with support for markdown formatting for beautifully styled outputs.
+It features a clean, simple GUI where users can input system prompts and messages, adjust parameters like temperature and token length, and receive AI-generated responses.
 
-Built with Python and Tkinter, it offers essential features like adjustable temperature settings, customizable system prompts, and the ability to stop generation mid-stream. Perfect for developers and users who want a native, lightweight interface for their local Jan AI instance.
+The app supports multiple GPT4All models and displays responses with markdown formatting, making it ideal for both casual users and developers who want to experiment with local AI language models without dealing directly with APIs.
 
-## Features
+This project provides an API service built with Python that integrates with GPT4All.
 
-- Clean and modern Tkinter-based GUI interface
-- Real-time response streaming from Jan AI
-- Markdown rendering support
-- Environment variable configuration
-- Stop generation functionality
-- Response history management
+## Setup
 
-## Prerequisites
+1. Clone the repository
+2. Create a `.env` file based on the provided `.env-example`:
+   ```
+   API_IP=127.0.0.1
+   PORT=4891
+   ```
+
+## Environment Variables
+
+- `API_IP`: The IP address where the API service will run (default: 127.0.0.1)
+- `PORT`: The port number for the API service (default: 4891)
+
+## Running the Application
+
+To run the application:
+
+```bash
+python main.py
+```
+
+The API service will start on the configured IP and port (default: http://127.0.0.1:4891).
+
+## Project Structure
+
+- `main.py`: Main application entry point
+- `.env`: Configuration file for environment variables
+- `.env-example`: Example environment variable template
+
+## Requirements
 
 - Python 3.x
-- Jan AI running locally
-
-## Installation
-
-1. Clone this repository
-2. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Copy `.env-example` to `.env` and configure your environment variables:
-   ```bash
-   cp .env-example .env
-   ```
-
-## Required Dependencies
-
-- requests==2.31.0
-- markdown==3.5.2
-- python-dotenv==1.0.1
-
-## Usage
-
-1. Ensure Jan AI is running locally on your machine
-2. Configure your `.env` file with the necessary settings
-3. Run the application:
-   ```bash
-   python main.py
-   ```
-
-## Environment Configuration
-
-Create a `.env` file in the root directory with the following variables:
-- Configure the necessary environment variables as shown in `.env-example`
-
-## Features
-
-The application provides:
-- A clean, modern interface for interacting with Jan AI
-- Real-time response streaming
-- Markdown rendering for formatted responses
-- Ability to stop generation mid-stream
-- System-like styling for a native look and feel
-
-## Contributing
-
-Feel free to submit issues and enhancement requests!
+- Additional requirements can be found in `requirements.txt`
 
 ## License
 
-This project is open source and available under the MIT License. 
+[Add your license information here]
+
+## Contributing
+
+[Add contribution guidelines here] 
